@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#5b4bd0">
 <meta name="referrer" content="no-referrer">
-<title>Warehouse</title>
+<title>Warehouse Dashboard - Manajemen Stok Gudang</title>
+<meta name="description" content="Dashboard manajemen stok gudang: catat barang masuk dan keluar per batch, pantau kedaluwarsa dan stok menipis, dengan akses berdasarkan peran.">
+<meta property="og:title" content="Warehouse Dashboard">
+<meta property="og:description" content="Dashboard manajemen stok gudang: catat barang masuk dan keluar per batch, pantau kedaluwarsa dan stok menipis, dengan akses berdasarkan peran.">
+<meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235ec6f5'/%3E%3Cstop offset='1' stop-color='%23c04df0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='48' height='48' rx='14' fill='url(%23g)'/%3E%3Cpath d='M10 21 24 11l14 10v16H10z' fill='white'/%3E%3Cpath d='M17 37V27h14v10M17 31h14' fill='none' stroke='%237a5cf0' stroke-width='2.2' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 :root{--bg:radial-gradient(60% 50% at 10% 0%,#e6d9ff 0,transparent 60%),radial-gradient(50% 50% at 100% 20%,#bdeeff 0,transparent 60%),linear-gradient(135deg,#c7d3ff,#dccfff 50%,#bfe6f7);--win:rgba(255,255,255,.38);--card:rgba(255,255,255,.62);--bd:rgba(255,255,255,.8);--sh:0 20px 60px rgba(88,80,180,.22);--tx:#1e2245;--mu:#5f668f;--inp:rgba(255,255,255,.7);--ln:rgba(90,100,170,.16);--n1:#8a52d6;--n2:#3f4aa8;--a1:#7a5cf0;--a2:#4c7bf5;--in:#0f9f78;--out:#e0591f;--bad:#d6334f;--warn:#a96a0c;--c1:#5b7cff;--c2:#e24fc0;--navM:rgba(255,255,255,.72);color-scheme:light}
@@ -56,7 +60,9 @@ main{padding:26px 30px 30px;min-width:0}
 .k{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
 .k div{position:relative;display:flex;flex-direction:column-reverse;justify-content:space-between;min-height:104px;padding:16px 18px;border-radius:22px;background:var(--card);border:1px solid var(--bd);box-shadow:0 10px 30px rgba(90,90,180,.12);backdrop-filter:blur(16px)}
 .k b{font-size:28px;line-height:1.1}.k span{font-size:13px;color:var(--mu)}
-.k div::after{content:"";position:absolute;right:14px;bottom:14px;width:26px;height:26px;border-radius:9px;background:rgba(150,150,255,.25)}
+.k i{position:absolute;right:14px;bottom:14px;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(122,92,240,.14);color:var(--a1)}
+.k i svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.k .a i{background:rgba(214,51,79,.14);color:var(--bad)}
 .k .a{box-shadow:0 0 0 2px var(--bad)}.k .a b{color:var(--bad)}
 .k div:nth-child(2),.k div:nth-child(4),.k div:nth-child(6){color:#fff;border-color:transparent}
 .k div:nth-child(2){background:linear-gradient(135deg,#5ec6f5,#4a7cf5)}
@@ -64,7 +70,7 @@ main{padding:26px 30px 30px;min-width:0}
 .k div:nth-child(6){background:linear-gradient(135deg,#8a6cf5,#5a4bd6)}
 .k div:nth-child(2) span,.k div:nth-child(4) span,.k div:nth-child(6) span{color:rgba(255,255,255,.88)}
 .k div:nth-child(2) b,.k div:nth-child(4) b,.k div:nth-child(6) b{color:#fff}
-.k div:nth-child(2)::after,.k div:nth-child(4)::after,.k div:nth-child(6)::after{background:rgba(255,255,255,.35)}
+.k div:nth-child(2) i,.k div:nth-child(4) i,.k div:nth-child(6) i{background:rgba(255,255,255,.28);color:#fff}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:24px;padding:18px;margin-bottom:16px;backdrop-filter:blur(16px);box-shadow:0 10px 30px rgba(90,90,180,.1)}
 .card>h2{margin:0 0 14px;font-size:16px}
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.bar input,.bar select{flex:1 1 150px;width:auto}
@@ -263,6 +269,12 @@ const stockRows=()=>{const q=$("q").value.toLowerCase();return bat.filter(b=>!q|
 const trxRows=()=>{const q=$("mq").value.toLowerCase(),t=$("mt").value;
   return moves.filter(m=>(!t||m.type===t)&&(!q||[m.name,m.code,m.batch,m.ref,m.note].join(" ").toLowerCase().includes(q)))};
 
+const KI=['<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
+ '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5M3 17.5l9 5 9-5"/>',
+ '<path d="M12 3v11M7.5 10L12 14.500 16.500 10"/><path d="M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"/>',
+ '<path d="M12 14V3M7.500 7L12 2.500 16.500 7"/><path d="M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"/>',
+ '<path d="M22 17l-8.500-8.500-5 5L2 7"/><path d="M16 17h6v-6"/>',
+ '<path d="M6 3h12M6 21h12M7 3v4l5 5-5 5v4M17 3v4l-5 5 5 5v4"/>'];
 function render(){
   items=Object.entries(inv.items).map(([c,v])=>({c,n:v.name||c,u:v.unit||"pcs",min:v.min||0,
     b:Object.entries(v.batches||{}).map(([no,b])=>({no,q:b.q||0,e:b.e||0}))})).sort((a,b)=>a.n.localeCompare(b.n));
@@ -274,7 +286,7 @@ function render(){
     if(!live.length)bat.push({no:"-",q:0,e:0,c:i.c,n:i.n,u:i.u,min:i.min,tot:0,st:["Habis","bad"]})}
   const td=inv.stats[dk(Date.now())]||{i:0,o:0};
   $("kpi").innerHTML=[["Total stok",nf(total)],["Jenis barang",nf(items.length)],["Masuk hari ini","+"+nf(td.i)],["Keluar hari ini","-"+nf(td.o)],
-    ["Stok menipis",nf(low),low],["Kedaluwarsa",nf(soon),soon]].map(([l,v,a])=>`<div class="${a?"a":""}"><b>${v}</b><span>${l}</span></div>`).join("");
+    ["Stok menipis",nf(low),low],["Kedaluwarsa",nf(soon),soon]].map(([l,v,a],k)=>`<div class="${a?"a":""}"><b>${v}</b><span>${l}</span><i><svg viewBox="0 0 24 24">${KI[k]}</svg></i></div>`).join("");
   tbl("tb1",H1,stockRows());
   const t=todayUTC();
   tbl("tb3",["Kode","Nama","Batch","Sisa","Kedaluwarsa","Sisa waktu"],bat.filter(b=>b.q>0&&b.e>0&&Math.floor((b.e-t)/DAY)<=WARN).sort((a,b)=>a.e-b.e)
