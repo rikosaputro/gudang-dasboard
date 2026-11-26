@@ -149,7 +149,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {getAuth,setPersistence,browserSessionPersistence,signInWithEmailAndPassword,sendPasswordResetEmail,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,doc,onSnapshot,collection,query,where,orderBy,limit,getDocs,runTransaction,addDoc,setDoc,getDoc,updateDoc,deleteDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const cfg={apiKey:"AIzaSyAZ7bQV2HblzVuL6FsUT57u3KipQb6XxGM",authDomain:"warehouse-7f2d8.firebaseapp.com",projectId:"warehouse-7f2d8",appId:"1:92141578835:web:5d97e790763981cb1c34a6"};
+const cfg={apiKey:"AIzaSyD7yBqNjF4mIwv0ZOFcSxL0gDVzAdusVYo",authDomain:"dashboard-gudang.firebaseapp.com",projectId:"dashboard-gudang",appId:"1:117066940104:web:6d3c80c076bb6d2f44effd"};
 if(window.top!==window.self){document.documentElement.hidden=true;throw new Error("framed")}
 const auth=getAuth(initializeApp(cfg)),db=getFirestore();
 setPersistence(auth,browserSessionPersistence).catch(()=>{});
