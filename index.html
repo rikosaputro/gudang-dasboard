@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17212b">
+<meta name="referrer" content="no-referrer">
+<title>Warehouse</title>
+<style>
+:root{--bg:#eceff1;--card:#fff;--tx:#141a22;--mu:#667180;--ln:#dde2e7;--nav:#17212b;--ac:#e8590c;--in:#12875a;--out:#d9480f;--bad:#c92a2a;--warn:#b7791f}
+@media(prefers-color-scheme:dark){:root{--bg:#0f151b;--card:#18212a;--tx:#e7ecf1;--mu:#8d9aa8;--ln:#26323d;--nav:#0b1116;--in:#3fbf8c;--out:#ff8a4c;--bad:#ff6b6b;--warn:#e0b04a}}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+.hide{display:none!important}
+button{font:inherit;border:0;border-radius:10px;padding:9px 16px;min-height:42px;background:var(--ac);color:#fff;font-weight:600;cursor:pointer}
+button.g{background:transparent;color:var(--tx);border:1px solid var(--ln)}
+button:disabled{opacity:.55;cursor:wait}
+input,select{font:inherit;width:100%;min-height:42px;padding:8px 11px;border-radius:10px;border:1px solid var(--ln);background:var(--card);color:var(--tx)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mu)}
+/* login */
+#login{min-height:100vh;display:grid;place-items:center;padding:20px;background:var(--nav)}
+.lb{width:100%;max-width:380px;background:var(--card);border-radius:18px;padding:30px 26px}
+.lb h1{margin:0 0 4px;font-size:24px}.lb p{margin:0 0 20px;color:var(--mu)}
+.lb label{margin-bottom:12px}.lb button{width:100%}
+#msg{min-height:20px;margin:12px 0 0;font-size:14px;color:var(--bad)}
+.lk{background:none;color:var(--mu);border:0;padding:0;min-height:0;font-weight:400;font-size:13px;margin-top:10px;text-decoration:underline}
+/* app shell */
+#app{display:grid;grid-template-columns:200px 1fr;min-height:100vh}
+nav{background:var(--nav);color:#c9d3dc;padding:18px 12px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+nav b{color:#fff;font-size:18px;padding:4px 12px 16px}
+nav button{background:transparent;color:inherit;text-align:left;font-weight:500;border-radius:8px}
+nav button.on{background:var(--ac);color:#fff}
+nav .sp{flex:1}.who{font-size:12px;padding:8px 12px;word-break:break-all;color:#8d9aa8}
+main{padding:20px;max-width:1100px;width:100%}
+.k{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.k div{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:12px 14px}
+.k b{display:block;font-size:24px}.k span{color:var(--mu);font-size:13px}
+.k .a b{color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:16px;margin-bottom:14px}
+.card>h2{margin:0 0 12px;font-size:16px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.bar input,.bar select{flex:1 1 150px;width:auto}
+.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--ln);white-space:nowrap}th{color:var(--mu);font-size:13px;font-weight:600}
+.p{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--ln)}
+.p.ok{color:var(--in)}.p.bad{color:var(--bad)}.p.warn{color:var(--warn)}
+/* form */
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.seg button{background:transparent;color:var(--tx);border:2px solid var(--ln)}
+.seg button.on[data-t=IN]{background:var(--in);border-color:var(--in);color:#fff}
+.seg button.on[data-t=OUT]{background:var(--out);border-color:var(--out);color:#fff}
+.fm{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.full{grid-column:1/-1}
+#fmsg{font-size:14px;font-weight:600}
+svg#ch{display:block;width:100%;height:auto}
+/* HP */
+@media(max-width:800px){
+  #app{display:block;padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+  nav{position:fixed;inset:auto 0 0 0;height:auto;flex-direction:row;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:5;gap:2px}
+  nav b,nav .sp,nav .who{display:none}
+  nav button{flex:1;text-align:center;padding:8px 2px;font-size:13px}
+  main{padding:12px;padding-top:calc(12px + env(safe-area-inset-top))}
+  .k{grid-template-columns:repeat(2,1fr)}
+  .wrap{overflow:visible}
+  table,thead,tbody,tr,td{display:block}thead{display:none}
+  tr{border:1px solid var(--ln);border-radius:10px;margin-bottom:8px;padding:4px 12px}
+  td{display:flex;justify-content:space-between;gap:14px;white-space:normal;border:0;padding:4px 0;text-align:right}
+  td::before{content:attr(data-l);color:var(--mu);font-size:12px;flex:none;text-align:left}
+  td[colspan]::before{content:none}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="login">
+  <div class="lb">
+    <h1>Warehouse</h1><p>Masuk dengan email yang sudah didaftarkan admin.</p>
+    <label>Email<input id="em" type="email" autocomplete="username"></label>
+    <label>Password<input id="pw" type="password" autocomplete="current-password"></label>
+    <button id="go">Masuk</button>
+    <button id="fp" class="lk" type="button">Lupa password?</button>
+    <p id="msg"></p>
+  </div>
+</div>
+
+<div id="app" class="hide">
+  <nav id="nav"><b>Warehouse</b>
+    <button data-i="0" class="on">Ringkasan</button><button data-i="1">Stok</button><button data-i="2">Transaksi</button><button data-i="3">Peringatan</button><button data-i="4" id="nu" class="hide">Pengguna</button>
+    <span class="sp"></span><span class="who" id="who"></span><button id="out" class="g" style="color:#c9d3dc;border-color:#2c3a47">Keluar</button>
+  </nav>
+  <main>
+    <div class="k" id="kpi"></div>
+
+    <section id="s0">
+      <div class="card"><h2>Masuk dan keluar, 14 hari terakhir</h2><svg id="ch"></svg></div>
+    </section>
+
+    <section id="s1" class="card hide">
+      <div class="bar"><input id="q" placeholder="Cari nama atau kode"><button id="x1" class="g">Unduh Excel</button></div>
+      <div class="wrap"><table id="tb1"></table></div>
+    </section>
+
+    <section id="s2" class="hide">
+      <div class="card">
+        <h2>Catat transaksi</h2>
+        <div class="seg"><button data-t="IN" class="on">Barang masuk</button><button data-t="OUT">Barang keluar</button></div>
+        <div class="fm">
+          <label class="full">Barang<select id="ti"></select></label>
+          <div id="fnew" class="fm full hide">
+            <label>Kode barang baru<input id="nc" autocomplete="off"></label>
+            <label>Nama barang<input id="nn" autocomplete="off"></label>
+            <label>Satuan<input id="nu" placeholder="pcs" autocomplete="off"></label>
+            <label>Stok minimum<input id="nm" type="number" min="0" step="any"></label>
+          </div>
+          <label id="fb1">Nomor batch<input id="tb" list="bl" autocomplete="off"><datalist id="bl"></datalist></label>
+          <label id="fb2" class="hide">Batch<select id="tbs"></select></label>
+          <label id="fe">Kedaluwarsa (opsional)<input id="te" type="date"></label>
+          <label>Jumlah<input id="tq" type="number" min="0" step="any" inputmode="decimal"></label>
+          <label>Referensi<input id="tr" placeholder="No. surat jalan atau PO" autocomplete="off"></label>
+          <label>Catatan<input id="tn" autocomplete="off"></label>
+        </div>
+        <div class="bar" style="margin:14px 0 0"><button id="sv">Simpan transaksi</button><span id="fmsg"></span></div>
+      </div>
+      <div class="card">
+        <h2>Riwayat transaksi</h2>
+        <div class="bar">Dari <input id="d1" type="date" style="flex:0 1 160px"> sampai <input id="d2" type="date" style="flex:0 1 160px"><button id="ld" class="g">Tampilkan</button></div>
+        <div class="bar"><input id="mq" placeholder="Cari barang, batch, referensi"><select id="mt"><option value="">Masuk dan keluar</option><option value="IN">Masuk</option><option value="OUT">Keluar</option></select><button id="x2" class="g">Unduh Excel</button></div>
+        <p id="mc" style="color:var(--mu);margin:0 0 8px"></p>
+        <div class="wrap"><table id="tb2"></table></div>
+      </div>
+    </section>
+
+    <section id="s3" class="hide">
+      <div class="card"><h2>Batch segera atau sudah kedaluwarsa</h2><div class="wrap"><table id="tb3"></table></div></div>
+      <div class="card"><h2>Barang di bawah atau sama dengan stok minimum</h2><div class="wrap"><table id="tb4"></table></div></div>
+    </section>
+    <section id="s4" class="hide">
+      <div class="card"><h2>Akun pengguna</h2><p id="um" style="color:var(--mu);margin:0 0 10px">Hanya email di daftar ini yang bisa membuka data. Staff bisa mencatat transaksi, admin juga bisa mengelola daftar. Setelah menambah email di sini, buat akunnya di Firebase Console (Authentication, Users, Add user).</p>
+        <div class="bar"><input id="ae" type="email" placeholder="Email"><input id="an" placeholder="Nama"><select id="ar" style="flex:0 1 120px"><option>staff</option><option>admin</option></select><button id="aa">Tambah</button></div>
+        <div class="wrap"><table id="tb5"></table></div></div>
+      <div class="card"><h2>Riwayat login (50 terbaru)</h2><div class="wrap"><table id="tb6"></table></div></div>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,setPersistence,browserSessionPersistence,signInWithEmailAndPassword,sendPasswordResetEmail,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,onSnapshot,collection,query,where,orderBy,limit,getDocs,runTransaction,addDoc,setDoc,getDoc,updateDoc,deleteDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const cfg={apiKey:"AIzaSyAZ7bQV2HblzVuL6FsUT57u3KipQb6XxGM",authDomain:"warehouse-7f2d8.firebaseapp.com",projectId:"warehouse-7f2d8",appId:"1:92141578835:web:5d97e790763981cb1c34a6"};
+if(window.top!==window.self){document.documentElement.hidden=true;throw new Error("framed")}
+const auth=getAuth(initializeApp(cfg)),db=getFirestore();
+setPersistence(auth,browserSessionPersistence).catch(()=>{});
+
+const $=id=>document.getElementById(id),DAY=864e5,WARN=30,CATAT_PENGGUNA=true; // false = jangan simpan field "by" di moves
+const nf=n=>Number(n||0).toLocaleString("id-ID"),r6=x=>Math.round(x*1e6)/1e6;
+const dk=t=>{const d=new Date(t);return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")};
+const fd=u=>u>0?new Date(u).toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}):"-";
+const ft=t=>t?new Date(t).toLocaleString("id-ID",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"-";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const todayUTC=()=>{const n=new Date();return Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())};
+const iref=doc(db,"warehouse","main","data","inventory"),BAD=/[.\/\[\]*~`]/;
+const FEFO=(a,b)=>(a.e||9e15)-(b.e||9e15)||a.no.localeCompare(b.no);
+let inv={items:{},stats:{}},items=[],bat=[],moves=[],unsub=null,T="IN",want="";
+
+/* ---------- login ---------- */
+$("go").onclick=async()=>{const b=$("go"),m=$("msg");m.style.color="";m.textContent="";b.disabled=true;
+  try{await signInWithEmailAndPassword(auth,$("em").value.trim(),$("pw").value)}catch(e){m.textContent="Email atau password salah."}
+  b.disabled=false};
+$("pw").onkeydown=e=>{if(e.key==="Enter")$("go").click()};
+$("fp").onclick=async()=>{const m=$("em").value.trim();if(!m){$("msg").textContent="Isi email dulu, lalu tekan Lupa password.";return}
+  try{await sendPasswordResetEmail(auth,m);$("msg").style.color="var(--in)";$("msg").textContent="Tautan reset dikirim ke "+m+"."}
+  catch(e){$("msg").style.color="";$("msg").textContent="Gagal mengirim tautan reset."}};
+$("out").onclick=async()=>{const u=auth.currentUser;
+  if(u)try{await addDoc(collection(db,"warehouse","main","logins"),{ts:Date.now(),uid:u.uid,email:u.email||"",event:"LOGOUT",device:navigator.userAgent.slice(0,120)})}catch(e){}
+  try{sessionStorage.removeItem("lg")}catch(e){}signOut(auth)};
+let idleT=null,lastBump=0;
+function bump(f){const n=Date.now();if(!f&&n-lastBump<1000)return;lastBump=n;clearTimeout(idleT);
+  if(auth.currentUser)idleT=setTimeout(()=>{signOut(auth);$("msg").style.color="";$("msg").textContent="Sesi berakhir karena tidak ada aktivitas. Silakan masuk lagi."},15*60*1000)}
+["click","keydown","mousemove","touchstart","scroll"].forEach(v=>addEventListener(v,()=>bump(false),{passive:true,capture:true}));
+
+onAuthStateChanged(auth,u=>{
+  if(unsub){unsub();unsub=null}
+  $("login").classList.toggle("hide",!!u);$("app").classList.toggle("hide",!u);
+  if(!u){clearTimeout(idleT);return}
+  bump(true);$("who").textContent=u.email||"";
+  $("nu").classList.add("hide");if(!$("s4").classList.contains("hide"))show(0);
+  getDoc(doc(db,"warehouse","main","allowed",(u.email||"").toLowerCase())).then(r=>{if(r.exists()&&auth.currentUser&&auth.currentUser.uid===u.uid)$("who").textContent=(r.data().name||u.email)+" ("+r.data().role+")"}).catch(()=>{});
+  try{if(sessionStorage.getItem("lg")!==u.uid){sessionStorage.setItem("lg",u.uid);
+    addDoc(collection(db,"warehouse","main","logins"),{ts:Date.now(),uid:u.uid,email:u.email||"",event:"LOGIN",device:navigator.userAgent.slice(0,120)}).catch(()=>{})}}catch(e){}
+  // tab Pengguna hanya muncul bila aturan Firestore mengizinkan akun ini membaca daftar email (admin)
+  getDocs(query(collection(db,"warehouse","main","allowed"),limit(1))).then(()=>{if(auth.currentUser&&auth.currentUser.uid===u.uid)$("nu").classList.remove("hide")}).catch(()=>{});
+  const t=Date.now();$("d2").valueAsDate=new Date(t);$("d1").valueAsDate=new Date(t-29*DAY);
+  unsub=onSnapshot(iref,s=>{inv=s.exists()?{items:s.data().items||{},stats:s.data().stats||{}}:{items:{},stats:{}};render()},
+    ()=>{signOut(auth);$("msg").style.color="";$("msg").textContent="Email ini belum terdaftar atau tidak punya akses ke data."});
+  loadMoves();
+});
+
+/* ---------- tampilan umum ---------- */
+function tbl(id,head,rows){
+  $(id).innerHTML="<thead><tr>"+head.map(h=>`<th>${h}</th>`).join("")+"</tr></thead><tbody>"+
+  (rows.map(r=>"<tr>"+r.map((c,i)=>Array.isArray(c)?`<td data-l="${head[i]}"><span class="p ${c[1]}">${esc(c[0])}</span></td>`:`<td data-l="${head[i]}">${esc(c)}</td>`).join("")+"</tr>").join("")||`<tr><td colspan="${head.length}">Tidak ada data</td></tr>`)+"</tbody>"}
+const plain=r=>r.map(c=>Array.isArray(c)?c[0]:c);
+function xl(name,head,rows){if(typeof XLSX==="undefined"){alert("Library Excel gagal dimuat. Periksa koneksi lalu muat ulang.");return}
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([head,...rows]),"Data");XLSX.writeFile(wb,name+"-"+dk(Date.now())+".xlsx")}
+function status(b,min,tot){
+  if(b.q<=0)return["Habis","bad"];
+  if(b.e>0){const d=Math.floor((b.e-todayUTC())/DAY);if(d<0)return["Kedaluwarsa","bad"];if(d<=WARN)return["Segera ("+d+" hr)","warn"]}
+  if(min>0&&tot<=min)return["Menipis","warn"];return["Aman","ok"]}
+
+const H1=["Kode","Nama","Batch","Sisa","Kedaluwarsa","Status"],H2=["Waktu","Jenis","Kode","Barang","Batch","Jumlah","Satuan","Referensi","Catatan"];
+const stockRows=()=>{const q=$("q").value.toLowerCase();return bat.filter(b=>!q||b.c.toLowerCase().includes(q)||b.n.toLowerCase().includes(q)).map(b=>[b.c,b.n,b.no,nf(b.q)+" "+b.u,fd(b.e),b.st])};
+const trxRows=()=>{const q=$("mq").value.toLowerCase(),t=$("mt").value;
+  return moves.filter(m=>(!t||m.type===t)&&(!q||[m.name,m.code,m.batch,m.ref,m.note].join(" ").toLowerCase().includes(q)))};
+
+function render(){
+  items=Object.entries(inv.items).map(([c,v])=>({c,n:v.name||c,u:v.unit||"pcs",min:v.min||0,
+    b:Object.entries(v.batches||{}).map(([no,b])=>({no,q:b.q||0,e:b.e||0}))})).sort((a,b)=>a.n.localeCompare(b.n));
+  bat=[];let total=0,low=0,soon=0;
+  for(const i of items){
+    const live=i.b.filter(x=>x.q>0).sort(FEFO);
+    i.tot=live.reduce((s,x)=>s+x.q,0);total+=i.tot;if(i.min>0&&i.tot<=i.min)low++;
+    for(const b of live){const st=status(b,i.min,i.tot);if(st[0]==="Kedaluwarsa"||st[0].startsWith("Segera"))soon++;bat.push({...b,c:i.c,n:i.n,u:i.u,min:i.min,tot:i.tot,st})}
+    if(!live.length)bat.push({no:"-",q:0,e:0,c:i.c,n:i.n,u:i.u,min:i.min,tot:0,st:["Habis","bad"]})}
+  const td=inv.stats[dk(Date.now())]||{i:0,o:0};
+  $("kpi").innerHTML=[["Total stok",nf(total)],["Jenis barang",nf(items.length)],["Masuk hari ini","+"+nf(td.i)],["Keluar hari ini","-"+nf(td.o)],
+    ["Stok menipis",nf(low),low],["Kedaluwarsa",nf(soon),soon]].map(([l,v,a])=>`<div class="${a?"a":""}"><b>${v}</b><span>${l}</span></div>`).join("");
+  tbl("tb1",H1,stockRows());
+  const t=todayUTC();
+  tbl("tb3",["Kode","Nama","Batch","Sisa","Kedaluwarsa","Sisa waktu"],bat.filter(b=>b.q>0&&b.e>0&&Math.floor((b.e-t)/DAY)<=WARN).sort((a,b)=>a.e-b.e)
+    .map(b=>{const d=Math.floor((b.e-t)/DAY);return[b.c,b.n,b.no,nf(b.q)+" "+b.u,fd(b.e),d<0?"Lewat "+(-d)+" hari":d+" hari lagi"]}));
+  tbl("tb4",["Kode","Nama","Stok","Minimum","Kurang"],items.filter(i=>i.min>0&&i.tot<=i.min).sort((a,b)=>(a.tot-a.min)-(b.tot-b.min))
+    .map(i=>[i.c,i.n,nf(i.tot)+" "+i.u,nf(i.min)+" "+i.u,nf(i.min-i.tot)+" "+i.u]));
+  drawChart();drawForm()}
+
+function drawChart(){
+  const N=14,d=[...Array(N)].map((_,k)=>{const t=Date.now()-(N-1-k)*DAY;return[new Date(t).getDate(),inv.stats[dk(t)]||{}]});
+  const mx=Math.max(1,...d.flatMap(x=>[x[1].i||0,x[1].o||0])),W=700,Hh=150,s=W/N;
+  $("ch").setAttribute("viewBox","0 0 "+W+" 190");
+  $("ch").innerHTML=d.map(([l,v],k)=>{const a=(v.i||0)/mx*Hh,b=(v.o||0)/mx*Hh,x=k*s+s*.15,w=s*.34;
+    return`<rect x="${x}" y="${160-a}" width="${w}" height="${a}" rx="3" fill="var(--in)"/><rect x="${x+w+2}" y="${160-b}" width="${w}" height="${b}" rx="3" fill="var(--out)"/><text x="${k*s+s/2}" y="180" font-size="11" text-anchor="middle" fill="var(--mu)">${l}</text>`}).join("")
+   +`<text x="0" y="12" font-size="12" fill="var(--in)">■ Masuk</text><text x="70" y="12" font-size="12" fill="var(--out)">■ Keluar</text>`}
+
+/* ---------- navigasi ---------- */
+function show(i){[0,1,2,3,4].forEach(k=>$("s"+k).classList.toggle("hide",k!=i));$("kpi").classList.toggle("hide",i==2||i==4);if(i==4)loadUsers();
+  [...$("nav").querySelectorAll("button[data-i]")].forEach(b=>b.classList.toggle("on",b.dataset.i==i))}
+$("nav").onclick=e=>{const i=e.target.dataset.i;if(i!=null)show(+i)};show(0);
+$("q").oninput=()=>tbl("tb1",H1,stockRows());
+
+/* ---------- riwayat ---------- */
+function drawTrx(){const r=trxRows();
+  tbl("tb2",["Waktu","Jenis","Barang","Batch","Jumlah","Referensi","Catatan"],r.map(m=>[ft(m.ts),[m.type==="IN"?"Masuk":"Keluar",m.type==="IN"?"ok":"warn"],m.name+" ("+m.code+")",m.batch,nf(m.qty)+" "+m.unit,m.ref||"",m.note||""]));
+  $("mc").textContent=r.length+" transaksi"+(moves.length>=2000?" (dibatasi 2.000)":"")}
+async function loadMoves(){
+  const a=new Date($("d1").value+"T00:00:00").getTime(),b=new Date($("d2").value+"T23:59:59").getTime();
+  try{const s=await getDocs(query(collection(db,"warehouse","main","moves"),where("ts",">=",a),where("ts","<=",b),orderBy("ts","desc"),limit(2000)));
+    moves=s.docs.map(d=>d.data());drawTrx()}catch(e){$("mc").textContent="Gagal memuat riwayat transaksi."}}
+$("ld").onclick=loadMoves;$("mq").oninput=$("mt").onchange=drawTrx;
+$("x1").onclick=()=>xl("stok",H1,stockRows().map(plain));
+$("x2").onclick=()=>xl("transaksi",H2,trxRows().map(m=>[ft(m.ts),m.type==="IN"?"Masuk":"Keluar",m.code,m.name,m.batch,m.qty,m.unit,m.ref||"",m.note||""]));
+
+/* ---------- daftar email yang boleh masuk (admin) ---------- */
+const AL=collection(db,"warehouse","main","allowed"),myEm=()=>(auth.currentUser.email||"").toLowerCase();
+async function loadUsers(){
+  try{const a=await getDocs(AL);
+    const rows=a.docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>(y.addedAt||0)-(x.addedAt||0));
+    $("tb5").innerHTML="<thead><tr><th>Email</th><th>Nama</th><th>Ditambahkan</th><th>Peran</th><th></th></tr></thead><tbody>"+rows.map(u=>`<tr><td data-l="Email">${esc(u.id)}</td><td data-l="Nama">${esc(u.name||"-")}</td><td data-l="Ditambahkan">${ft(u.addedAt)}</td><td data-l="Peran"><select data-u="${esc(u.id)}">${["staff","admin"].map(r=>`<option${r===u.role?" selected":""}>${r}</option>`).join("")}</select></td><td><button class="g" data-del="${esc(u.id)}">Hapus</button></td></tr>`).join("")+"</tbody>"}
+  catch(e){$("um").textContent="Hanya admin yang bisa mengelola daftar ini."}
+  try{const h=await getDocs(query(collection(db,"warehouse","main","logins"),orderBy("ts","desc"),limit(50)));
+    tbl("tb6",["Waktu","Email","Kejadian"],h.docs.map(d=>d.data()).map(v=>[ft(v.ts),v.email,[v.event==="LOGIN"?"Masuk":"Keluar",v.event==="LOGIN"?"ok":"warn"]]))}catch(e){}}
+$("aa").onclick=async()=>{const e=$("ae").value.trim().toLowerCase();
+  if(!/^\S+@\S+\.\S+$/.test(e)){alert("Isi email yang valid.");return}
+  try{await setDoc(doc(AL,e),{name:$("an").value.trim(),role:$("ar").value,addedAt:Date.now()});$("ae").value=$("an").value="";loadUsers()}
+  catch(x){alert("Gagal menambah (ditolak aturan Firestore).")}};
+document.addEventListener("change",async e=>{const id=e.target.dataset&&e.target.dataset.u;if(!id)return;
+  if(id===myEm()&&e.target.value!=="admin"&&!confirm("Anda menurunkan peran akun sendiri. Lanjutkan?")){loadUsers();return}
+  try{await updateDoc(doc(AL,id),{role:e.target.value})}catch(x){alert("Gagal mengubah peran (ditolak aturan Firestore).");loadUsers()}});
+document.addEventListener("click",async e=>{const id=e.target.dataset&&e.target.dataset.del;if(!id)return;
+  if(id===myEm()){alert("Anda tidak bisa menghapus email sendiri.");return}
+  if(!confirm("Hapus akses "+id+"? Akunnya juga sebaiknya dihapus di Firebase Console."))return;
+  try{await deleteDoc(doc(AL,id));loadUsers()}catch(x){alert("Gagal menghapus (ditolak aturan Firestore).")}});
+
+
+document.querySelector(".seg").onclick=e=>{const t=e.target.dataset.t;if(!t)return;T=t;
+  [...document.querySelectorAll(".seg button")].forEach(b=>b.classList.toggle("on",b.dataset.t===t));drawForm()};
+function drawForm(){
+  const sel=$("ti"),keep=want||sel.value;want="";
+  sel.innerHTML=(T==="IN"?'<option value="__new">+ Barang baru</option>':"")+items.filter(i=>T==="IN"||i.tot>0)
+    .map(i=>`<option value="${esc(i.c)}">${esc(i.n)} (${esc(i.c)}), stok ${nf(i.tot)} ${esc(i.u)}</option>`).join("");
+  if([...sel.options].some(o=>o.value===keep))sel.value=keep;
+  const it=items.find(i=>i.c===sel.value);
+  $("fnew").classList.toggle("hide",sel.value!=="__new");
+  ["fb1","fe"].forEach(id=>$(id).classList.toggle("hide",T!=="IN"));$("fb2").classList.toggle("hide",T==="IN");
+  const live=it?it.b.filter(x=>x.q>0).sort(FEFO):[],bk=$("tbs").value;
+  $("tbs").innerHTML='<option value="">Otomatis (kedaluwarsa terdekat)</option>'+live.map(x=>`<option value="${esc(x.no)}">${esc(x.no)}, sisa ${nf(x.q)}, exp ${fd(x.e)}</option>`).join("");
+  if(live.some(x=>x.no===bk))$("tbs").value=bk;
+  $("bl").innerHTML=it?it.b.map(x=>`<option value="${esc(x.no)}">`).join(""):""}
+$("ti").onchange=drawForm;
+
+$("sv").onclick=async()=>{
+  const m=$("fmsg"),btn=$("sv");m.style.color="";m.textContent="";
+  const qty=r6(Number($("tq").value)),ref=$("tr").value.trim(),note=$("tn").value.trim(),nw=$("ti").value==="__new";
+  const code=nw?$("nc").value.trim():$("ti").value,bin=$("tb").value.trim(),nname=$("nn").value.trim();let exp=0;
+  try{
+    if(!code)throw"Pilih barang atau isi kode barang baru.";
+    if(nw&&!nname)throw"Nama barang baru wajib diisi.";
+    if(BAD.test(code))throw"Kode barang tidak boleh memuat titik, garis miring, atau kurung siku.";
+    if(!(qty>0))throw"Jumlah harus lebih dari 0.";
+    if(T==="IN"){if(!bin)throw"Nomor batch wajib diisi.";if(BAD.test(bin))throw"Nomor batch tidak boleh memuat titik, garis miring, atau kurung siku.";
+      if($("te").value)exp=Date.parse($("te").value+"T00:00:00Z")}
+    const it=items.find(i=>i.c===code);
+    if(!confirm((T==="IN"?"Catat barang MASUK":"Catat barang KELUAR")+"\n"+(nw?nname:(it?it.n:code))+"\nJumlah: "+nf(qty)+(T==="IN"?"\nBatch: "+bin:"")+(ref?"\nReferensi: "+ref:"")))return;
+    btn.disabled=true;
+    const res=await runTransaction(db,async tx=>{
+      const s=await tx.get(iref),d=s.exists()?s.data():{},its=d.items||{},st=d.stats||{},k=dk(Date.now()),mv=[];
+      let o=its[code];
+      if(nw){if(o)throw"Kode "+code+" sudah dipakai. Pilih barangnya dari daftar.";
+        o=its[code]={name:nname,unit:$("nu").value.trim()||"pcs",min:Math.max(0,Number($("nm").value)||0),batches:{}}}
+      else if(!o)throw"Barang tidak ditemukan. Muat ulang halaman.";
+      const bt=o.batches=o.batches||{};
+      if(T==="IN"){
+        const c=bt[bin];
+        if(c&&c.e>0&&exp>0&&c.e!==exp)throw"Batch "+bin+" sudah ada dengan kedaluwarsa "+fd(c.e)+".";
+        bt[bin]={q:r6((c&&c.q||0)+qty),e:c&&c.e>0?c.e:exp};mv.push([bin,qty]);
+      }else{
+        const pick=$("tbs").value,td=todayUTC();let need=qty;
+        const pool=Object.entries(bt).map(([no,b])=>({no,q:b.q||0,e:b.e||0})).filter(b=>b.q>0&&(pick?b.no===pick:(!b.e||b.e>=td))).sort(FEFO);
+        for(const b of pool){if(need<=0)break;const x=Math.min(b.q,need);bt[b.no]={q:r6(b.q-x),e:b.e};mv.push([b.no,x]);need=r6(need-x)}
+        if(need>0)throw"Stok tidak cukup, kurang "+nf(need)+" "+(o.unit||"pcs")+(pick?" pada batch ini.":" (batch kedaluwarsa tidak dipakai otomatis).");
+      }
+      const sx=st[k]||{i:0,o:0},f=T==="IN"?"i":"o";sx[f]=r6((sx[f]||0)+qty);const ts=Date.now();
+      mv.forEach(([bn,q],n)=>tx.set(doc(collection(db,"warehouse","main","moves")),
+        {ts:ts+n,type:T,code,name:o.name||code,batch:bn,qty:q,unit:o.unit||"pcs",ref,note,...(CATAT_PENGGUNA?{by:auth.currentUser.email}:{})}));
+      tx.set(iref,{items:{[code]:o},stats:{[k]:sx}},{merge:true});
+      return{n:o.name||code,u:o.unit||"pcs",b:mv.map(([bn,q])=>bn+" ("+nf(q)+")").join(", ")};
+    });
+    m.style.color="var(--in)";m.textContent="Tersimpan: "+(T==="IN"?"masuk ":"keluar ")+nf(qty)+" "+res.u+" "+res.n+", batch "+res.b;
+    ["tq","tr","tn","tb","te","nc","nn","nu","nm"].forEach(id=>$(id).value="");
+    if(nw)want=code;loadMoves();
+  }catch(e){
+    m.style.color="var(--bad)";
+    m.textContent=typeof e==="string"?e:e&&e.code==="permission-denied"?"Akun ini belum diizinkan mencatat transaksi (ditolak aturan Firestore).":"Gagal menyimpan: "+((e&&(e.code||e.message))||e)}
+  btn.disabled=false};
+</script>
+</body>
+</html>
