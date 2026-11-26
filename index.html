@@ -149,7 +149,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {getAuth,setPersistence,browserSessionPersistence,signInWithEmailAndPassword,sendPasswordResetEmail,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,doc,onSnapshot,collection,query,where,orderBy,limit,getDocs,runTransaction,addDoc,setDoc,getDoc,updateDoc,deleteDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const cfg={apiKey:"AIzaSyD7yBqNjF4mIwv0ZOFcSxL0gDVzAdusVYo",authDomain:"dashboard-gudang.firebaseapp.com",projectId:"dashboard-gudang",appId:"1:117066940104:web:6d3c80c076bb6d2f44effd"};
+const cfg={apiKey:"AIzaSyD7yBqNjF4mIwv0ZOFcSxL0gDVzAdusVYo",authDomain:"dashboard-gudang.firebaseapp.com",projectId:"dashboard-gudang",storageBucket:"dashboard-gudang.firebasestorage.app",messagingSenderId:"117066940104",appId:"1:117066940104:web:6d3c80c076bb6d2f44effd"};
 if(window.top!==window.self){document.documentElement.hidden=true;throw new Error("framed")}
 const auth=getAuth(initializeApp(cfg)),db=getFirestore();
 setPersistence(auth,browserSessionPersistence).catch(()=>{});
@@ -161,20 +161,21 @@ const fd=u=>u>0?new Date(u).toLocaleDateString("id-ID",{day:"numeric",month:"sho
 const ft=t=>t?new Date(t).toLocaleString("id-ID",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"-";
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const todayUTC=()=>{const n=new Date();return Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())};
-const iref=doc(db,"warehouse","main","data","inventory"),BAD=/[.\/\[\]*~`]/;
+const iref=doc(db,"dashboard","main","data","inventory"),BAD=/[.\/\[\]*~`]/;
 const FEFO=(a,b)=>(a.e||9e15)-(b.e||9e15)||a.no.localeCompare(b.no);
 let inv={items:{},stats:{}},items=[],bat=[],moves=[],unsub=null,T="IN",want="";
 
 /* ---------- login ---------- */
 $("go").onclick=async()=>{const b=$("go"),m=$("msg");m.style.color="";m.textContent="";b.disabled=true;
-  try{await signInWithEmailAndPassword(auth,$("em").value.trim(),$("pw").value)}catch(e){m.textContent="Email atau password salah."}
+  try{await signInWithEmailAndPassword(auth,$("em").value.trim(),$("pw").value)}catch(e){const M={"auth/invalid-credential":"Email atau password salah.","auth/wrong-password":"Email atau password salah.","auth/user-not-found":"Email belum dibuat di Authentication.","auth/invalid-email":"Format email tidak valid.","auth/unauthorized-domain":"Domain situs ini belum diizinkan di Firebase (Authentication, Settings, Authorized domains).","auth/operation-not-allowed":"Login Email/Password belum diaktifkan di Firebase.","auth/too-many-requests":"Terlalu banyak percobaan. Tunggu beberapa menit.","auth/network-request-failed":"Koneksi internet bermasalah.","auth/api-key-not-valid.-please-pass-a-valid-api-key.":"Konfigurasi Firebase di file salah (apiKey).","auth/invalid-api-key":"Konfigurasi Firebase di file salah (apiKey)."};
+    m.textContent=(M[e.code]||"Login gagal.")+" ["+(e.code||"error")+"]"}
   b.disabled=false};
 $("pw").onkeydown=e=>{if(e.key==="Enter")$("go").click()};
 $("fp").onclick=async()=>{const m=$("em").value.trim();if(!m){$("msg").textContent="Isi email dulu, lalu tekan Lupa password.";return}
   try{await sendPasswordResetEmail(auth,m);$("msg").style.color="var(--in)";$("msg").textContent="Tautan reset dikirim ke "+m+"."}
   catch(e){$("msg").style.color="";$("msg").textContent="Gagal mengirim tautan reset."}};
 $("out").onclick=async()=>{const u=auth.currentUser;
-  if(u)try{await addDoc(collection(db,"warehouse","main","logins"),{ts:Date.now(),uid:u.uid,email:u.email||"",event:"LOGOUT",device:navigator.userAgent.slice(0,120)})}catch(e){}
+  if(u)try{await addDoc(collection(db,"dashboard","main","logins"),{ts:Date.now(),uid:u.uid,email:u.email||"",event:"LOGOUT",device:navigator.userAgent.slice(0,120)})}catch(e){}
   try{sessionStorage.removeItem("lg")}catch(e){}signOut(auth)};
 let idleT=null,lastBump=0;
 function bump(f){const n=Date.now();if(!f&&n-lastBump<1000)return;lastBump=n;clearTimeout(idleT);
@@ -187,11 +188,11 @@ onAuthStateChanged(auth,u=>{
   if(!u){clearTimeout(idleT);return}
   bump(true);$("who").textContent=u.email||"";
   $("nu").classList.add("hide");if(!$("s4").classList.contains("hide"))show(0);
-  getDoc(doc(db,"warehouse","main","allowed",(u.email||"").toLowerCase())).then(r=>{if(r.exists()&&auth.currentUser&&auth.currentUser.uid===u.uid)$("who").textContent=(r.data().name||u.email)+" ("+r.data().role+")"}).catch(()=>{});
+  getDoc(doc(db,"dashboard","main","allowed",(u.email||"").toLowerCase())).then(r=>{if(r.exists()&&auth.currentUser&&auth.currentUser.uid===u.uid)$("who").textContent=(r.data().name||u.email)+" ("+r.data().role+")"}).catch(()=>{});
   try{if(sessionStorage.getItem("lg")!==u.uid){sessionStorage.setItem("lg",u.uid);
-    addDoc(collection(db,"warehouse","main","logins"),{ts:Date.now(),uid:u.uid,email:u.email||"",event:"LOGIN",device:navigator.userAgent.slice(0,120)}).catch(()=>{})}}catch(e){}
+    addDoc(collection(db,"dashboard","main","logins"),{ts:Date.now(),uid:u.uid,email:u.email||"",event:"LOGIN",device:navigator.userAgent.slice(0,120)}).catch(()=>{})}}catch(e){}
   // tab Pengguna hanya muncul bila aturan Firestore mengizinkan akun ini membaca daftar email (admin)
-  getDocs(query(collection(db,"warehouse","main","allowed"),limit(1))).then(()=>{if(auth.currentUser&&auth.currentUser.uid===u.uid)$("nu").classList.remove("hide")}).catch(()=>{});
+  getDocs(query(collection(db,"dashboard","main","allowed"),limit(1))).then(()=>{if(auth.currentUser&&auth.currentUser.uid===u.uid)$("nu").classList.remove("hide")}).catch(()=>{});
   const t=Date.now();$("d2").valueAsDate=new Date(t);$("d1").valueAsDate=new Date(t-29*DAY);
   unsub=onSnapshot(iref,s=>{inv=s.exists()?{items:s.data().items||{},stats:s.data().stats||{}}:{items:{},stats:{}};render()},
     ()=>{signOut(auth);$("msg").style.color="";$("msg").textContent="Email ini belum terdaftar atau tidak punya akses ke data."});
@@ -255,20 +256,20 @@ function drawTrx(){const r=trxRows();
   $("mc").textContent=r.length+" transaksi"+(moves.length>=2000?" (dibatasi 2.000)":"")}
 async function loadMoves(){
   const a=new Date($("d1").value+"T00:00:00").getTime(),b=new Date($("d2").value+"T23:59:59").getTime();
-  try{const s=await getDocs(query(collection(db,"warehouse","main","moves"),where("ts",">=",a),where("ts","<=",b),orderBy("ts","desc"),limit(2000)));
+  try{const s=await getDocs(query(collection(db,"dashboard","main","moves"),where("ts",">=",a),where("ts","<=",b),orderBy("ts","desc"),limit(2000)));
     moves=s.docs.map(d=>d.data());drawTrx()}catch(e){$("mc").textContent="Gagal memuat riwayat transaksi."}}
 $("ld").onclick=loadMoves;$("mq").oninput=$("mt").onchange=drawTrx;
 $("x1").onclick=()=>xl("stok",H1,stockRows().map(plain));
 $("x2").onclick=()=>xl("transaksi",H2,trxRows().map(m=>[ft(m.ts),m.type==="IN"?"Masuk":"Keluar",m.code,m.name,m.batch,m.qty,m.unit,m.ref||"",m.note||""]));
 
 /* ---------- daftar email yang boleh masuk (admin) ---------- */
-const AL=collection(db,"warehouse","main","allowed"),myEm=()=>(auth.currentUser.email||"").toLowerCase();
+const AL=collection(db,"dashboard","main","allowed"),myEm=()=>(auth.currentUser.email||"").toLowerCase();
 async function loadUsers(){
   try{const a=await getDocs(AL);
     const rows=a.docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>(y.addedAt||0)-(x.addedAt||0));
     $("tb5").innerHTML="<thead><tr><th>Email</th><th>Nama</th><th>Ditambahkan</th><th>Peran</th><th></th></tr></thead><tbody>"+rows.map(u=>`<tr><td data-l="Email">${esc(u.id)}</td><td data-l="Nama">${esc(u.name||"-")}</td><td data-l="Ditambahkan">${ft(u.addedAt)}</td><td data-l="Peran"><select data-u="${esc(u.id)}">${["staff","admin"].map(r=>`<option${r===u.role?" selected":""}>${r}</option>`).join("")}</select></td><td><button class="g" data-del="${esc(u.id)}">Hapus</button></td></tr>`).join("")+"</tbody>"}
   catch(e){$("um").textContent="Hanya admin yang bisa mengelola daftar ini."}
-  try{const h=await getDocs(query(collection(db,"warehouse","main","logins"),orderBy("ts","desc"),limit(50)));
+  try{const h=await getDocs(query(collection(db,"dashboard","main","logins"),orderBy("ts","desc"),limit(50)));
     tbl("tb6",["Waktu","Email","Kejadian"],h.docs.map(d=>d.data()).map(v=>[ft(v.ts),v.email,[v.event==="LOGIN"?"Masuk":"Keluar",v.event==="LOGIN"?"ok":"warn"]]))}catch(e){}}
 $("aa").onclick=async()=>{const e=$("ae").value.trim().toLowerCase();
   if(!/^\S+@\S+\.\S+$/.test(e)){alert("Isi email yang valid.");return}
@@ -331,7 +332,7 @@ $("sv").onclick=async()=>{
         if(need>0)throw"Stok tidak cukup, kurang "+nf(need)+" "+(o.unit||"pcs")+(pick?" pada batch ini.":" (batch kedaluwarsa tidak dipakai otomatis).");
       }
       const sx=st[k]||{i:0,o:0},f=T==="IN"?"i":"o";sx[f]=r6((sx[f]||0)+qty);const ts=Date.now();
-      mv.forEach(([bn,q],n)=>tx.set(doc(collection(db,"warehouse","main","moves")),
+      mv.forEach(([bn,q],n)=>tx.set(doc(collection(db,"dashboard","main","moves")),
         {ts:ts+n,type:T,code,name:o.name||code,batch:bn,qty:q,unit:o.unit||"pcs",ref,note,...(CATAT_PENGGUNA?{by:auth.currentUser.email}:{})}));
       tx.set(iref,{items:{[code]:o},stats:{[k]:sx}},{merge:true});
       return{n:o.name||code,u:o.unit||"pcs",b:mv.map(([bn,q])=>bn+" ("+nf(q)+")").join(", ")};
